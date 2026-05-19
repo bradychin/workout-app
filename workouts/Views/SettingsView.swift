@@ -77,7 +77,7 @@ struct SettingsView: View {
         }
     }
 
-    private func buildCSV(from sets: [WorkoutSet]) throws -> URL {
+    nonisolated private func buildCSV(from sets: [WorkoutSet]) throws -> URL {
         var rows: [String] = [
             "Exercise,Muscle Group,Date,Set,Reps,Weight (lbs),Difficulty,Volume (lbs),Est 1RM (lbs)"
         ]
@@ -112,14 +112,14 @@ struct SettingsView: View {
         return url
     }
 
-    private func csvEscape(_ value: String) -> String {
+    nonisolated private func csvEscape(_ value: String) -> String {
         if value.contains(",") || value.contains("\"") || value.contains("\n") {
             return "\"\(value.replacingOccurrences(of: "\"", with: "\"\""))\""
         }
         return value
     }
 
-    private func exportDateStamp() -> String {
+    nonisolated private func exportDateStamp() -> String {
         let f = DateFormatter()
         f.dateFormat = "yyyy-MM-dd"
         return f.string(from: Date())
