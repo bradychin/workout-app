@@ -67,7 +67,7 @@ struct AddSetView: View {
 
                     HStack(spacing: 8) {
                         Spacer()
-                        ForEach([2.5, 1.25], id: \.self) { delta in
+                        ForEach([5, 10], id: \.self) { delta in
                             Button("-\(delta, specifier: "%.2g")") {
                                 weight = max(0, weight - delta)
                             }
