@@ -5,8 +5,6 @@ struct PlansView: View {
     @Query(sort: \WorkoutPlan.createdAt) private var plans: [WorkoutPlan]
     @Environment(\.modelContext) private var modelContext
     @State private var showCreatePlan = false
-    @State private var selectedPlan: WorkoutPlan?
-    @State private var showActivePlan: WorkoutPlan?
 
     var body: some View {
         NavigationStack {
@@ -24,8 +22,10 @@ struct PlansView: View {
                 } else {
                     List {
                         ForEach(plans) { plan in
-                            PlanRowView(plan: plan) {
-                                showActivePlan = plan
+                            NavigationLink {
+                                PlanDetailView(plan: plan)
+                            } label: {
+                                PlanRowView(plan: plan)
                             }
                         }
                         .onDelete(perform: deletePlans)
@@ -49,9 +49,6 @@ struct PlansView: View {
             .sheet(isPresented: $showCreatePlan) {
                 CreatePlanView()
             }
-            .fullScreenCover(item: $showActivePlan) { plan in
-                ActiveWorkoutView(plan: plan)
-            }
         }
     }
 
@@ -64,33 +61,15 @@ struct PlansView: View {
 
 struct PlanRowView: View {
     let plan: WorkoutPlan
-    let onStart: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(plan.name)
-                        .font(.headline)
-                    Text("\(plan.planExercises.count) exercises")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                Button(action: onStart) {
-                    Label("Start", systemImage: "play.fill")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(Color.indigo)
-                        .foregroundStyle(.white)
-                        .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
-            }
+            Text(plan.name)
+                .font(.headline)
+            Text("\(plan.sortedExercises.count) exercises")
+                .font(.caption)
+                .foregroundStyle(.secondary)
 
-            // Exercise chips
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 6) {
                     ForEach(plan.sortedExercises) { planEx in
@@ -104,11 +83,12 @@ struct PlanRowView: View {
                 }
             }
         }
-        .padding(.vertical, 6)
+        .padding(.vertical, 4)
     }
 }
 
 #Preview {
     PlansView()
         .modelContainer(for: [Exercise.self, WorkoutSet.self, WorkoutPlan.self, PlanExercise.self], inMemory: true)
+        .environment(WorkoutSession())
 }

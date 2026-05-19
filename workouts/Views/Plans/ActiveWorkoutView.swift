@@ -2,58 +2,50 @@ import SwiftUI
 import SwiftData
 
 struct ActiveWorkoutView: View {
-    let plan: WorkoutPlan
+    @Environment(WorkoutSession.self) private var workoutSession
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    @State private var loggedSets: [PersistentIdentifier: [LoggedSet]] = [:]
     @State private var loggingFor: PlanExercise?
     @State private var historyFor: Exercise?
-    @State private var startTime = Date()
+    @State private var showCancelConfirm = false
     @State private var showFinishConfirm = false
 
-    struct LoggedSet: Identifiable {
-        let id = UUID()
-        var weight: Double
-        var reps: Int
-        var difficulty: Int
-    }
-
-    private var sortedExercises: [PlanExercise] {
-        plan.sortedExercises
-    }
+    private var plan: WorkoutPlan? { workoutSession.activePlan }
 
     var body: some View {
+        @Bindable var session = workoutSession
+
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    // Timer
                     workoutTimerBanner
 
-                    // Exercise cards
-                    ForEach(sortedExercises) { planEx in
-                        ActiveExerciseCard(
-                            planExercise: planEx,
-                            loggedSets: loggedSets[planEx.persistentModelID] ?? [],
-                            onAddSet: { loggingFor = planEx },
-                            onViewHistory: { historyFor = planEx.exercise }
-                        )
+                    if let plan {
+                        ForEach(plan.sortedExercises) { planEx in
+                            ActiveExerciseCard(
+                                planExercise: planEx,
+                                loggedSets: workoutSession.loggedSets(for: planEx),
+                                onAddSet: { loggingFor = planEx },
+                                onViewHistory: { historyFor = planEx.exercise }
+                            )
+                        }
                     }
                 }
                 .padding()
+                .padding(.bottom, 20)
             }
-            .navigationTitle(plan.name)
+            .navigationTitle(plan?.name ?? "Workout")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("Cancel") { showCancelConfirm = true }
+                        .foregroundStyle(.red)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Finish") {
-                        showFinishConfirm = true
-                    }
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.indigo)
+                    Button("Finish") { showFinishConfirm = true }
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.indigo)
                 }
             }
             .sheet(item: $historyFor) { exercise in
@@ -65,19 +57,32 @@ struct ActiveWorkoutView: View {
                     lastWeight: lastWeight(for: planEx),
                     lastReps: lastReps(for: planEx)
                 ) { weight, reps, difficulty in
-                    addSet(to: planEx, weight: weight, reps: reps, difficulty: difficulty)
+                    workoutSession.addSet(to: planEx, weight: weight, reps: reps, difficulty: difficulty)
                 }
             }
-            .confirmationDialog("Finish Workout?", isPresented: $showFinishConfirm) {
-                Button("Save & Finish", role: .none) { saveWorkout() }
-                Button("Cancel", role: .cancel) {}
+            .confirmationDialog("Cancel Workout?", isPresented: $showCancelConfirm) {
+                Button("Discard Workout", role: .destructive) {
+                    workoutSession.reset()
+                    dismiss()
+                }
+                Button("Keep Going", role: .cancel) {}
             } message: {
-                Text("Save all logged sets to your history?")
+                Text("All logged sets will be lost.")
+            }
+            .confirmationDialog("Finish Workout?", isPresented: $showFinishConfirm) {
+                Button("Save & Finish") {
+                    workoutSession.finish(context: modelContext)
+                    dismiss()
+                }
+                Button("Keep Going", role: .cancel) {}
+            } message: {
+                Text("Save all \(workoutSession.totalSetsLogged) logged sets to your history?")
             }
         }
+        .presentationDragIndicator(.visible)
     }
 
-    // MARK: - Helper Views
+    // MARK: - Timer banner
 
     private var workoutTimerBanner: some View {
         CardContainer {
@@ -85,7 +90,7 @@ struct ActiveWorkoutView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Workout in Progress")
                         .font(.headline)
-                    Text(startTime, style: .timer)
+                    Text(workoutSession.startTime, style: .timer)
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundStyle(.indigo)
@@ -99,43 +104,14 @@ struct ActiveWorkoutView: View {
         }
     }
 
-    // MARK: - Logic
+    // MARK: - Helpers
 
     private func lastWeight(for planEx: PlanExercise) -> Double {
-        guard let exercise = planEx.exercise else { return 0 }
-        return exercise.sets.sorted { $0.date > $1.date }.first?.weight ?? 0
+        planEx.exercise?.sets.sorted { $0.date > $1.date }.first?.weight ?? 0
     }
 
     private func lastReps(for planEx: PlanExercise) -> Int {
-        guard let exercise = planEx.exercise else { return 0 }
-        return exercise.sets.sorted { $0.date > $1.date }.first?.reps ?? 0
-    }
-
-    private func addSet(to planEx: PlanExercise, weight: Double, reps: Int, difficulty: Int) {
-        let existing = loggedSets[planEx.persistentModelID] ?? []
-        let newSet = LoggedSet(weight: weight, reps: reps, difficulty: difficulty)
-        loggedSets[planEx.persistentModelID] = existing + [newSet]
-    }
-
-    private func saveWorkout() {
-        let now = Date()
-        for planEx in sortedExercises {
-            guard let exercise = planEx.exercise,
-                  let sets = loggedSets[planEx.persistentModelID] else { continue }
-            for (index, set) in sets.enumerated() {
-                let workoutSet = WorkoutSet(
-                    date: now,
-                    setNumber: index + 1,
-                    reps: set.reps,
-                    weight: set.weight,
-                    difficulty: set.difficulty
-                )
-                workoutSet.exercise = exercise
-                modelContext.insert(workoutSet)
-                exercise.sets.append(workoutSet)
-            }
-        }
-        dismiss()
+        planEx.exercise?.sets.sorted { $0.date > $1.date }.first?.reps ?? 0
     }
 }
 
@@ -143,7 +119,7 @@ struct ActiveWorkoutView: View {
 
 struct ActiveExerciseCard: View {
     let planExercise: PlanExercise
-    let loggedSets: [ActiveWorkoutView.LoggedSet]
+    let loggedSets: [WorkoutSession.LoggedSet]
     let onAddSet: () -> Void
     let onViewHistory: () -> Void
 
@@ -237,6 +213,8 @@ struct ActiveExerciseCard: View {
     }
 }
 
+// MARK: - Difficulty Badge
+
 struct DifficultyBadge: View {
     let difficulty: Int
 
@@ -285,7 +263,6 @@ struct InlineSetLogger: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 24) {
-                // Exercise name
                 Text(exerciseName)
                     .font(.title2)
                     .fontWeight(.bold)
@@ -298,9 +275,7 @@ struct InlineSetLogger: View {
                         .foregroundStyle(.secondary)
 
                     HStack(spacing: 20) {
-                        Button {
-                            weight = max(0, weight - 5)
-                        } label: {
+                        Button { weight = max(0, weight - 5) } label: {
                             Image(systemName: "minus.circle.fill")
                                 .font(.title)
                                 .foregroundStyle(.indigo)
@@ -311,9 +286,7 @@ struct InlineSetLogger: View {
                             .font(.system(size: 48, weight: .bold, design: .rounded))
                             .frame(minWidth: 120, alignment: .center)
 
-                        Button {
-                            weight += 5
-                        } label: {
+                        Button { weight += 5 } label: {
                             Image(systemName: "plus.circle.fill")
                                 .font(.title)
                                 .foregroundStyle(.indigo)
@@ -321,28 +294,23 @@ struct InlineSetLogger: View {
                         .buttonStyle(.plain)
                     }
 
-                    // Fine control
                     HStack(spacing: 8) {
                         ForEach([2.5, 1.25, 0.5], id: \.self) { delta in
-                            Button("-\(delta, specifier: "%.2g")") {
-                                weight = max(0, weight - delta)
-                            }
-                            .font(.caption)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color(.secondarySystemBackground))
-                            .clipShape(Capsule())
-                            .buttonStyle(.plain)
+                            Button("-\(delta, specifier: "%.2g")") { weight = max(0, weight - delta) }
+                                .font(.caption)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color(.secondarySystemBackground))
+                                .clipShape(Capsule())
+                                .buttonStyle(.plain)
 
-                            Button("+\(delta, specifier: "%.2g")") {
-                                weight += delta
-                            }
-                            .font(.caption)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color(.secondarySystemBackground))
-                            .clipShape(Capsule())
-                            .buttonStyle(.plain)
+                            Button("+\(delta, specifier: "%.2g")") { weight += delta }
+                                .font(.caption)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color(.secondarySystemBackground))
+                                .clipShape(Capsule())
+                                .buttonStyle(.plain)
                         }
                     }
                 }
@@ -354,9 +322,7 @@ struct InlineSetLogger: View {
                         .foregroundStyle(.secondary)
 
                     HStack(spacing: 20) {
-                        Button {
-                            reps = max(1, reps - 1)
-                        } label: {
+                        Button { reps = max(1, reps - 1) } label: {
                             Image(systemName: "minus.circle.fill")
                                 .font(.title)
                                 .foregroundStyle(.indigo)
@@ -367,9 +333,7 @@ struct InlineSetLogger: View {
                             .font(.system(size: 48, weight: .bold, design: .rounded))
                             .frame(minWidth: 80, alignment: .center)
 
-                        Button {
-                            reps += 1
-                        } label: {
+                        Button { reps += 1 } label: {
                             Image(systemName: "plus.circle.fill")
                                 .font(.title)
                                 .foregroundStyle(.indigo)
@@ -378,7 +342,7 @@ struct InlineSetLogger: View {
                     }
                 }
 
-                // Difficulty / RPE
+                // RPE
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
                         Text("Difficulty (RPE)")
@@ -399,7 +363,6 @@ struct InlineSetLogger: View {
 
                 Spacer()
 
-                // Save button
                 Button {
                     onSave(weight, reps, difficulty)
                     dismiss()
@@ -453,7 +416,6 @@ struct ExerciseHistorySheet: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Stats bar
                     if maxWeightEver > 0 {
                         HStack(spacing: 0) {
                             statPill(label: "Max Weight", value: String(format: "%.0f lbs", maxWeightEver))
@@ -468,12 +430,9 @@ struct ExerciseHistorySheet: View {
                     }
 
                     if recentSessions.isEmpty {
-                        ContentUnavailableView(
-                            "No History",
-                            systemImage: "clock",
-                            description: Text("No sets logged yet for this exercise")
-                        )
-                        .padding(.top, 40)
+                        ContentUnavailableView("No History", systemImage: "clock",
+                            description: Text("No sets logged yet"))
+                            .padding(.top, 40)
                     } else {
                         VStack(spacing: 16) {
                             ForEach(recentSessions, id: \.0) { date, sets in
@@ -525,7 +484,6 @@ struct ExerciseHistorySheet: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-
             VStack(spacing: 6) {
                 ForEach(sets) { set in
                     HStack {
@@ -548,9 +506,7 @@ struct ExerciseHistorySheet: View {
 }
 
 #Preview {
-    ActiveWorkoutView(plan: {
-        let p = WorkoutPlan(name: "Push Day")
-        return p
-    }())
-    .modelContainer(for: [Exercise.self, WorkoutSet.self, WorkoutPlan.self, PlanExercise.self], inMemory: true)
+    ActiveWorkoutView()
+        .modelContainer(for: [Exercise.self, WorkoutSet.self, WorkoutPlan.self, PlanExercise.self], inMemory: true)
+        .environment(WorkoutSession())
 }

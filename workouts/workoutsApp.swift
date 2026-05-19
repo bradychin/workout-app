@@ -13,10 +13,13 @@ struct workoutsApp: App {
         }
     }
 
+    @State private var workoutSession = WorkoutSession()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .modelContainer(modelContainer)
+                .environment(workoutSession)
         }
     }
 }

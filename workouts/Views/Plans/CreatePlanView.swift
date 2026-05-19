@@ -6,9 +6,13 @@ struct CreatePlanView: View {
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Exercise.muscleGroup) private var exercises: [Exercise]
 
+    var editingPlan: WorkoutPlan?
+
     @State private var planName = ""
-    @State private var selectedExercises: [(Exercise, Int, String)] = [] // (exercise, sets, reps)
+    @State private var selectedExercises: [(Exercise, Int, String)] = []
     @State private var showExercisePicker = false
+
+    private var isEditing: Bool { editingPlan != nil }
 
     private var grouped: [(String, [Exercise])] {
         let dict = Dictionary(grouping: exercises) { $0.muscleGroup }
@@ -51,17 +55,24 @@ struct CreatePlanView: View {
                             .foregroundStyle(.indigo)
                     }
                 } header: {
-                    Text("Exercises")
+                    HStack {
+                        Text("Exercises")
+                        Spacer()
+                        if !selectedExercises.isEmpty {
+                            EditButton()
+                                .font(.caption)
+                        }
+                    }
                 }
             }
-            .navigationTitle("New Plan")
+            .navigationTitle(isEditing ? "Edit Plan" : "New Plan")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { savePlan() }
+                    Button("Save") { isEditing ? updatePlan() : savePlan() }
                         .disabled(planName.trimmingCharacters(in: .whitespaces).isEmpty || selectedExercises.isEmpty)
                         .fontWeight(.semibold)
                 }
@@ -76,13 +87,40 @@ struct CreatePlanView: View {
                     }
                 }
             }
+            .onAppear {
+                if let plan = editingPlan {
+                    planName = plan.name
+                    selectedExercises = plan.sortedExercises.compactMap { planEx in
+                        guard let exercise = planEx.exercise else { return nil }
+                        return (exercise, planEx.targetSets, planEx.targetReps)
+                    }
+                }
+            }
         }
     }
 
     private func savePlan() {
         let plan = WorkoutPlan(name: planName.trimmingCharacters(in: .whitespaces))
         modelContext.insert(plan)
+        applyExercises(to: plan)
+        dismiss()
+    }
 
+    private func updatePlan() {
+        guard let plan = editingPlan else { return }
+        plan.name = planName.trimmingCharacters(in: .whitespaces)
+
+        // Remove old plan exercises
+        for planEx in plan.planExercises {
+            modelContext.delete(planEx)
+        }
+        plan.planExercises = []
+
+        applyExercises(to: plan)
+        dismiss()
+    }
+
+    private func applyExercises(to plan: WorkoutPlan) {
         for (index, (exercise, sets, reps)) in selectedExercises.enumerated() {
             let planEx = PlanExercise(targetSets: sets, targetReps: reps, order: index)
             planEx.plan = plan
@@ -90,8 +128,6 @@ struct CreatePlanView: View {
             modelContext.insert(planEx)
             plan.planExercises.append(planEx)
         }
-
-        dismiss()
     }
 }
 
