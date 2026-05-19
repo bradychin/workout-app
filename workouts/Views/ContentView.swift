@@ -25,6 +25,12 @@ struct ContentView: View {
                     Label("Plans", systemImage: "list.bullet.clipboard.fill")
                 }
                 .tag(2)
+
+            SettingsView()
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape.fill")
+                }
+                .tag(3)
         }
         .tint(.indigo)
         .task {
