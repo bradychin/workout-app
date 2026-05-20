@@ -10,9 +10,9 @@ struct ExerciseDetailView: View {
     @State private var selectedChart: ChartType = .oneRM
 
     enum ChartType: String, CaseIterable {
-        case oneRM = "Est. 1RM"
-        case volume = "Volume"
         case maxWeight = "Max Weight"
+        case volume = "Volume"
+        case oneRM = "Est. 1RM"
     }
 
     private var calendar: Calendar { Calendar.current }
@@ -160,40 +160,7 @@ struct ExerciseDetailView: View {
     private var chartContent: some View {
         Chart(sessionData) { session in
             switch selectedChart {
-            case .oneRM:
-                LineMark(
-                    x: .value("Date", session.date),
-                    y: .value("Est. 1RM", session.maxOneRM)
-                )
-                .foregroundStyle(.indigo)
-                .interpolationMethod(.catmullRom)
-
-                AreaMark(
-                    x: .value("Date", session.date),
-                    y: .value("Est. 1RM", session.maxOneRM)
-                )
-                .foregroundStyle(
-                    LinearGradient(colors: [.indigo.opacity(0.3), .clear], startPoint: .top, endPoint: .bottom)
-                )
-                .interpolationMethod(.catmullRom)
-
-                PointMark(
-                    x: .value("Date", session.date),
-                    y: .value("Est. 1RM", session.maxOneRM)
-                )
-                .foregroundStyle(.indigo)
-                .symbolSize(30)
-
-            case .volume:
-                BarMark(
-                    x: .value("Date", session.date, unit: .day),
-                    y: .value("Volume", session.totalVolume)
-                )
-                .foregroundStyle(
-                    LinearGradient(colors: [.purple, .indigo], startPoint: .bottom, endPoint: .top)
-                )
-                .cornerRadius(4)
-
+            
             case .maxWeight:
                 LineMark(
                     x: .value("Date", session.date),
@@ -216,6 +183,42 @@ struct ExerciseDetailView: View {
                     y: .value("Max Weight", session.maxWeight)
                 )
                 .foregroundStyle(.purple)
+                .symbolSize(30)
+                
+            case .volume:
+                BarMark(
+                    x: .value("Date", session.date, unit: .day),
+                    y: .value("Volume", session.totalVolume)
+                )
+                .foregroundStyle(
+                    LinearGradient(colors: [.purple, .indigo], startPoint: .bottom, endPoint: .top)
+                )
+                .cornerRadius(4)
+
+            
+                
+            case .oneRM:
+                LineMark(
+                    x: .value("Date", session.date),
+                    y: .value("Est. 1RM", session.maxOneRM)
+                )
+                .foregroundStyle(.indigo)
+                .interpolationMethod(.catmullRom)
+
+                AreaMark(
+                    x: .value("Date", session.date),
+                    y: .value("Est. 1RM", session.maxOneRM)
+                )
+                .foregroundStyle(
+                    LinearGradient(colors: [.indigo.opacity(0.3), .clear], startPoint: .top, endPoint: .bottom)
+                )
+                .interpolationMethod(.catmullRom)
+
+                PointMark(
+                    x: .value("Date", session.date),
+                    y: .value("Est. 1RM", session.maxOneRM)
+                )
+                .foregroundStyle(.indigo)
                 .symbolSize(30)
             }
         }
