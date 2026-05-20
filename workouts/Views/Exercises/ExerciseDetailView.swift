@@ -8,6 +8,8 @@ struct ExerciseDetailView: View {
     @State private var selectedMonth: Date? = nil
     @State private var showAddSet = false
     @State private var selectedChart: ChartType = .oneRM
+    @State private var showRename = false
+    @State private var pendingName = ""
 
     enum ChartType: String, CaseIterable {
         case maxWeight = "Max Weight"
@@ -90,17 +92,38 @@ struct ExerciseDetailView: View {
         .navigationBarTitleDisplayMode(.large)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showAddSet = true
-                } label: {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
-                        .foregroundStyle(.indigo)
+                HStack {
+                    Button {
+                        pendingName = exercise.name
+                        showRename = true
+                    } label: {
+                        Image(systemName: "pencil")
+                            .foregroundStyle(.indigo)
+                    }
+                    Button {
+                        showAddSet = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(.indigo)
+                    }
                 }
             }
         }
         .sheet(isPresented: $showAddSet) {
             AddSetView(preselectedExercise: exercise)
+        }
+        .alert("Rename Exercise", isPresented: $showRename) {
+            TextField("Exercise name", text: $pendingName)
+            Button("Save") {
+                let trimmed = pendingName.trimmingCharacters(in: .whitespaces)
+                if !trimmed.isEmpty {
+                    exercise.name = trimmed
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Enter a new name for \"\(exercise.name)\"")
         }
     }
 
