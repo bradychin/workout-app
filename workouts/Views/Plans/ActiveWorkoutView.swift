@@ -275,7 +275,7 @@ struct InlineSetLogger: View {
                         .foregroundStyle(.secondary)
 
                     HStack(spacing: 20) {
-                        Button { weight = max(0, weight - 5) } label: {
+                        Button { weight = max(0, weight - 1) } label: {
                             Image(systemName: "minus.circle.fill")
                                 .font(.title)
                                 .foregroundStyle(.indigo)
@@ -286,7 +286,7 @@ struct InlineSetLogger: View {
                             .font(.system(size: 48, weight: .bold, design: .rounded))
                             .frame(minWidth: 120, alignment: .center)
 
-                        Button { weight += 5 } label: {
+                        Button { weight += 1 } label: {
                             Image(systemName: "plus.circle.fill")
                                 .font(.title)
                                 .foregroundStyle(.indigo)
@@ -295,7 +295,7 @@ struct InlineSetLogger: View {
                     }
 
                     HStack(spacing: 8) {
-                        ForEach([2.5, 1.25, 0.5], id: \.self) { delta in
+                        ForEach([0.5, 5, 10], id: \.self) { delta in
                             Button("-\(delta, specifier: "%.2g")") { weight = max(0, weight - delta) }
                                 .font(.caption)
                                 .padding(.horizontal, 8)
