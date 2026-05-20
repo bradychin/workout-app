@@ -41,48 +41,52 @@ struct AddSetView: View {
 
                 // Weight
                 Section("Weight (lbs)") {
-                    HStack {
-                        Button {
-                            weight = max(0, weight - 1)
-                        } label: {
-                            Image(systemName: "minus.circle.fill")
-                                .foregroundStyle(.indigo)
-                        }
-                        .buttonStyle(.plain)
-
-                        Spacer()
-                        Text(String(format: "%.1f lbs", weight))
-                            .font(.title2)
-                            .fontWeight(.bold)
-                        Spacer()
-
-                        Button {
-                            weight += 1
-                        } label: {
-                            Image(systemName: "plus.circle.fill")
-                                .foregroundStyle(.indigo)
-                        }
-                        .buttonStyle(.plain)
-                    }
-
-                    HStack(spacing: 8) {
-                        Spacer()
-                        ForEach([0.5, 5, 10], id: \.self) { delta in
-                            Button("-\(delta, specifier: "%.2g")") {
-                                weight = max(0, weight - delta)
+                    VStack {
+                        HStack {
+                            Button {
+                                weight = max(0, weight - 1)
+                            } label: {
+                                Image(systemName: "minus.circle.fill")
+                                    .foregroundStyle(.indigo)
                             }
-                            .font(.caption)
-                            .buttonStyle(.bordered)
-                            .tint(.indigo)
-
-                            Button("+\(delta, specifier: "%.2g")") {
-                                weight += delta
+                            .buttonStyle(.plain)
+                            
+                            Spacer()
+                            Text(String(format: "%.1f lbs", weight))
+                                .font(.title2)
+                                .fontWeight(.bold)
+                            Spacer()
+                            
+                            Button {
+                                weight += 1
+                            } label: {
+                                Image(systemName: "plus.circle.fill")
+                                    .foregroundStyle(.indigo)
                             }
-                            .font(.caption)
-                            .buttonStyle(.bordered)
-                            .tint(.indigo)
+                            .buttonStyle(.plain)
                         }
-                        Spacer()
+                        
+                        Divider()
+
+                        HStack(spacing: 8) {
+                            Spacer()
+                            ForEach([0.5, 5, 10], id: \.self) { delta in
+                                Button("-\(delta, specifier: "%.2g")") {
+                                    weight = max(0, weight - delta)
+                                }
+                                .font(.caption)
+                                .buttonStyle(.bordered)
+                                .tint(.indigo)
+
+                                Button("+\(delta, specifier: "%.2g")") {
+                                    weight += delta
+                                }
+                                .font(.caption)
+                                .buttonStyle(.bordered)
+                                .tint(.indigo)
+                            }
+                            Spacer()
+                        }
                     }
                 }
 
