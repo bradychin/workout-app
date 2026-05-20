@@ -43,7 +43,7 @@ struct AddSetView: View {
                 Section("Weight (lbs)") {
                     HStack {
                         Button {
-                            weight = max(0, weight - 5)
+                            weight = max(0, weight - 1)
                         } label: {
                             Image(systemName: "minus.circle.fill")
                                 .foregroundStyle(.indigo)
@@ -57,7 +57,7 @@ struct AddSetView: View {
                         Spacer()
 
                         Button {
-                            weight += 5
+                            weight += 1
                         } label: {
                             Image(systemName: "plus.circle.fill")
                                 .foregroundStyle(.indigo)
@@ -67,7 +67,7 @@ struct AddSetView: View {
 
                     HStack(spacing: 8) {
                         Spacer()
-                        ForEach([5, 10], id: \.self) { delta in
+                        ForEach([0.5, 5, 10], id: \.self) { delta in
                             Button("-\(delta, specifier: "%.2g")") {
                                 weight = max(0, weight - delta)
                             }
