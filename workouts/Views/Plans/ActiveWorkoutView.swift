@@ -262,12 +262,8 @@ struct InlineSetLogger: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 24) {
-                Text(exerciseName)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .padding(.top)
-
+            ScrollView {
+              VStack(spacing: 24) {
                 // Weight picker
                 VStack(spacing: 8) {
                     Text("Weight (lbs)")
@@ -360,9 +356,19 @@ struct InlineSetLogger: View {
                     .tint(.indigo)
                 }
                 .padding(.horizontal)
-
-                Spacer()
-
+              }
+              .padding(.horizontal)
+              .padding(.top, 8)
+              .padding(.bottom, 12)
+            }
+            .navigationTitle(exerciseName)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
                 Button {
                     onSave(weight, reps, difficulty)
                     dismiss()
@@ -375,18 +381,13 @@ struct InlineSetLogger: View {
                         .foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
-                .padding()
                 .buttonStyle(.plain)
-            }
-            .padding(.horizontal)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
+                .padding(.horizontal)
+                .padding(.vertical, 12)
+                .background(Color(.systemBackground))
             }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.large])
         .presentationDragIndicator(.visible)
     }
 }
