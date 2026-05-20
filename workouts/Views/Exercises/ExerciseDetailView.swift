@@ -21,7 +21,7 @@ struct ExerciseDetailView: View {
         let months = Set(exercise.sets.map {
             calendar.dateInterval(of: .month, for: $0.date)!.start
         })
-        return months.sorted()
+        return months.sorted(by: >)
     }
 
     private var filteredSets: [WorkoutSet] {
