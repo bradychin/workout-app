@@ -27,19 +27,17 @@ struct DashboardView: View {
     }
 
     private var recentSets: [WorkoutSet] {
-        Array(allSets.prefix(15))
+        allSets
     }
 
-    private var topPRs: [(Exercise, Double)] {
+    private var pinnedPRs: [(Exercise, Double)] {
         exercises
+            .filter { $0.isFavorite }
             .compactMap { ex -> (Exercise, Double)? in
                 let rm = ex.estimatedOneRM
-                guard rm > 0 else { return nil }
-                return (ex, rm)
+                return (ex, rm > 0 ? rm : 0)
             }
             .sorted { $0.1 > $1.1 }
-            .prefix(5)
-            .map { $0 }
     }
 
     private var weeklyVolumeByDay: [(Date, Double)] {
@@ -61,10 +59,8 @@ struct DashboardView: View {
                         weeklyChartSection
                     }
 
-                    // Top PRs
-                    if !topPRs.isEmpty {
-                        topPRsSection
-                    }
+                    // Pinned PRs
+                    pinnedPRsSection
 
                     // Recent activity
                     if !recentSets.isEmpty {
@@ -163,32 +159,49 @@ struct DashboardView: View {
         }
     }
 
-    private var topPRsSection: some View {
+    private var pinnedPRsSection: some View {
         CardContainer {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Top PRs (Est. 1RM)")
+                Text("My PRs (Est. 1RM)")
                     .font(.headline)
 
-                ForEach(topPRs, id: \.0.persistentModelID) { exercise, rm in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(exercise.name)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                            Text(exercise.muscleGroup)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        Text(String(format: "%.0f lbs", rm))
+                if pinnedPRs.isEmpty {
+                    HStack(spacing: 10) {
+                        Image(systemName: "star")
+                            .foregroundStyle(.yellow)
+                        Text("Swipe right on any exercise to pin it here")
                             .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundStyle(.indigo)
+                            .foregroundStyle(.secondary)
                     }
                     .padding(.vertical, 4)
+                } else {
+                    ForEach(pinnedPRs, id: \.0.persistentModelID) { exercise, rm in
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(exercise.name)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                Text(exercise.muscleGroup)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            Spacer()
+                            if rm > 0 {
+                                Text(String(format: "%.0f lbs", rm))
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(.indigo)
+                            } else {
+                                Text("No data")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.tertiary)
+                            }
+                        }
+                        .padding(.vertical, 4)
 
-                    if exercise.persistentModelID != topPRs.last?.0.persistentModelID {
-                        Divider()
+                        if exercise.persistentModelID != pinnedPRs.last?.0.persistentModelID {
+                            Divider()
+                        }
                     }
                 }
             }
@@ -203,7 +216,7 @@ struct DashboardView: View {
 
             // Group by date
             let grouped = Dictionary(grouping: recentSets) { calendar.startOfDay(for: $0.date) }
-            let sortedDates = grouped.keys.sorted(by: >).prefix(5)
+            let sortedDates = grouped.keys.sorted(by: >).prefix(3)
 
             ForEach(Array(sortedDates), id: \.self) { day in
                 let daySets = grouped[day] ?? []
@@ -225,7 +238,7 @@ struct DashboardView: View {
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 if let maxW = exSets.map(\.weight).max() {
-                                    Text("↑\(Int(maxW)) lbs")
+                                    Text("\(Int(maxW)) lbs max")
                                         .font(.caption)
                                         .foregroundStyle(.indigo)
                                 }
