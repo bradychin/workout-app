@@ -9,6 +9,8 @@ final class Exercise {
     @Relationship(deleteRule: .cascade, inverse: \WorkoutSet.exercise)
     var sets: [WorkoutSet] = []
 
+    var isFavorite: Bool = false
+
     init(name: String, muscleGroup: String) {
         self.name = name
         self.muscleGroup = muscleGroup
