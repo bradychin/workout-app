@@ -42,6 +42,17 @@ struct ExercisesView: View {
                                     } label: {
                                         ExerciseRowView(exercise: exercise)
                                     }
+                                    .swipeActions(edge: .leading, allowsFullSwipe: true) {
+                                        Button {
+                                            exercise.isFavorite.toggle()
+                                        } label: {
+                                            Label(
+                                                exercise.isFavorite ? "Unpin" : "Pin to Dashboard",
+                                                systemImage: exercise.isFavorite ? "star.slash.fill" : "star.fill"
+                                            )
+                                        }
+                                        .tint(.yellow)
+                                    }
                                 }
                             } header: {
                                 HStack {
@@ -110,6 +121,12 @@ struct ExerciseRowView: View {
             }
 
             Spacer()
+
+            if exercise.isFavorite {
+                Image(systemName: "star.fill")
+                    .font(.caption)
+                    .foregroundStyle(.yellow)
+            }
 
             if exercise.maxWeight > 0 {
                 VStack(alignment: .trailing, spacing: 2) {
