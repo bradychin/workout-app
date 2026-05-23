@@ -238,7 +238,7 @@ struct DashboardView: View {
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 if let maxW = exSets.map(\.weight).max() {
-                                    Text("\(Int(maxW)) lbs max")
+                                    Text("\(maxW.formatted) lbs max")
                                         .font(.caption)
                                         .foregroundStyle(.indigo)
                                 }

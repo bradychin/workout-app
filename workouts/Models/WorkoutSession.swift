@@ -34,6 +34,14 @@ class WorkoutSession {
         loggedSets[planEx.persistentModelID] = existing + [LoggedSet(weight: weight, reps: reps, difficulty: difficulty)]
     }
 
+    func updateSet(for planEx: PlanExercise, at index: Int, weight: Double, reps: Int, difficulty: Int) {
+        guard var sets = loggedSets[planEx.persistentModelID], sets.indices.contains(index) else { return }
+        sets[index].weight = weight
+        sets[index].reps = reps
+        sets[index].difficulty = difficulty
+        loggedSets[planEx.persistentModelID] = sets
+    }
+
     func loggedSets(for planEx: PlanExercise) -> [LoggedSet] {
         loggedSets[planEx.persistentModelID] ?? []
     }

@@ -52,7 +52,7 @@ struct AddSetView: View {
                             .buttonStyle(.plain)
                             
                             Spacer()
-                            Text(String(format: "%.1f lbs", weight))
+                            Text(weight.lbs)
                                 .font(.title2)
                                 .fontWeight(.bold)
                             Spacer()

@@ -7,9 +7,17 @@ struct ActiveWorkoutView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var loggingFor: PlanExercise?
+    @State private var editingSet: EditSetTarget?
     @State private var historyFor: Exercise?
     @State private var showCancelConfirm = false
     @State private var showFinishConfirm = false
+
+    struct EditSetTarget: Identifiable {
+        let id = UUID()
+        let planEx: PlanExercise
+        let index: Int
+        let set: WorkoutSession.LoggedSet
+    }
 
     private var plan: WorkoutPlan? { workoutSession.activePlan }
 
@@ -27,6 +35,11 @@ struct ActiveWorkoutView: View {
                                 planExercise: planEx,
                                 loggedSets: workoutSession.loggedSets(for: planEx),
                                 onAddSet: { loggingFor = planEx },
+                                onEditSet: { index in
+                                    let sets = workoutSession.loggedSets(for: planEx)
+                                    guard sets.indices.contains(index) else { return }
+                                    editingSet = EditSetTarget(planEx: planEx, index: index, set: sets[index])
+                                },
                                 onViewHistory: { historyFor = planEx.exercise }
                             )
                         }
@@ -51,9 +64,22 @@ struct ActiveWorkoutView: View {
             .sheet(item: $historyFor) { exercise in
                 ExerciseHistorySheet(exercise: exercise)
             }
+            .sheet(item: $editingSet) { target in
+                InlineSetLogger(
+                    exerciseName: target.planEx.exercise?.name ?? "Exercise",
+                    title: "Edit Set \(target.index + 1)",
+                    lastWeight: target.set.weight,
+                    lastReps: target.set.reps,
+                    lastDifficulty: target.set.difficulty
+                ) { weight, reps, difficulty in
+                    workoutSession.updateSet(for: target.planEx, at: target.index, weight: weight, reps: reps, difficulty: difficulty)
+                }
+            }
             .sheet(item: $loggingFor) { planEx in
+                let setNumber = workoutSession.loggedSets(for: planEx).count + 1
                 InlineSetLogger(
                     exerciseName: planEx.exercise?.name ?? "Exercise",
+                    title: "Log Set \(setNumber)",
                     lastWeight: lastWeight(for: planEx),
                     lastReps: lastReps(for: planEx)
                 ) { weight, reps, difficulty in
@@ -121,6 +147,7 @@ struct ActiveExerciseCard: View {
     let planExercise: PlanExercise
     let loggedSets: [WorkoutSession.LoggedSet]
     let onAddSet: () -> Void
+    let onEditSet: (Int) -> Void
     let onViewHistory: () -> Void
 
     private var targetSets: Int { planExercise.targetSets }
@@ -184,10 +211,21 @@ struct ActiveExerciseCard: View {
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .frame(width: 40, alignment: .leading)
-                                Text("\(Int(set.weight)) lbs × \(set.reps) reps")
+                                Text("\(set.weight.lbs) × \(set.reps) reps")
                                     .font(.subheadline)
                                 Spacer()
                                 DifficultyBadge(difficulty: set.difficulty)
+                                Button {
+                                    onEditSet(index)
+                                } label: {
+                                    Image(systemName: "pencil")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                        .padding(6)
+                                        .background(Color(.systemFill))
+                                        .clipShape(Circle())
+                                }
+                                .buttonStyle(.plain)
                             }
                         }
                     }
@@ -242,22 +280,27 @@ struct DifficultyBadge: View {
 
 struct InlineSetLogger: View {
     let exerciseName: String
+    let title: String
     let lastWeight: Double
     let lastReps: Int
+    let lastDifficulty: Int
     let onSave: (Double, Int, Int) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var weight: Double
     @State private var reps: Int
-    @State private var difficulty: Int = 7
+    @State private var difficulty: Int
 
-    init(exerciseName: String, lastWeight: Double, lastReps: Int, onSave: @escaping (Double, Int, Int) -> Void) {
+    init(exerciseName: String, title: String = "Log Set", lastWeight: Double, lastReps: Int, lastDifficulty: Int = 7, onSave: @escaping (Double, Int, Int) -> Void) {
         self.exerciseName = exerciseName
+        self.title = title
         self.lastWeight = lastWeight
         self.lastReps = lastReps
+        self.lastDifficulty = lastDifficulty
         self.onSave = onSave
         self._weight = State(initialValue: lastWeight > 0 ? lastWeight : 45)
         self._reps = State(initialValue: lastReps > 0 ? lastReps : 10)
+        self._difficulty = State(initialValue: lastDifficulty)
     }
 
     var body: some View {
@@ -278,7 +321,7 @@ struct InlineSetLogger: View {
                         }
                         .buttonStyle(.plain)
 
-                        Text(String(format: "%.1f", weight))
+                        Text(weight.formatted)
                             .font(.system(size: 48, weight: .bold, design: .rounded))
                             .frame(minWidth: 120, alignment: .center)
 
@@ -361,7 +404,7 @@ struct InlineSetLogger: View {
               .padding(.top, 8)
               .padding(.bottom, 12)
             }
-            .navigationTitle(exerciseName)
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -373,7 +416,7 @@ struct InlineSetLogger: View {
                     onSave(weight, reps, difficulty)
                     dismiss()
                 } label: {
-                    Text("Save Set")
+                    Text(title.hasPrefix("Edit") ? "Save Changes" : "Save Set")
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding()
@@ -419,7 +462,7 @@ struct ExerciseHistorySheet: View {
                 VStack(spacing: 20) {
                     if maxWeightEver > 0 {
                         HStack(spacing: 0) {
-                            statPill(label: "Max Weight", value: String(format: "%.0f lbs", maxWeightEver))
+                            statPill(label: "Max Weight", value: maxWeightEver.lbs)
                             Divider().frame(height: 36)
                             statPill(label: "Best Est. 1RM", value: String(format: "%.0f lbs", bestOneRM))
                             Divider().frame(height: 36)
@@ -492,7 +535,7 @@ struct ExerciseHistorySheet: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .frame(width: 40, alignment: .leading)
-                        Text(String(format: "%.0f lbs × %d reps", set.weight, set.reps))
+                                Text("\(set.weight.lbs) × \(set.reps) reps")
                             .font(.subheadline)
                         Spacer()
                         DifficultyBadge(difficulty: set.difficulty)

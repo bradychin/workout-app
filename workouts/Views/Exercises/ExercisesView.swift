@@ -130,7 +130,7 @@ struct ExerciseRowView: View {
 
             if exercise.maxWeight > 0 {
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text(String(format: "%.0f lbs", exercise.maxWeight))
+                    Text(exercise.maxWeight.lbs)
                         .font(.subheadline)
                         .fontWeight(.semibold)
                         .foregroundStyle(.indigo)

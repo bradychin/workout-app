@@ -131,7 +131,7 @@ struct ExerciseDetailView: View {
 
     private var statsRow: some View {
         HStack(spacing: 12) {
-            MiniStatCard(title: "Max Weight", value: maxWeightEver > 0 ? "\(Int(maxWeightEver)) lbs" : "—", color: .indigo)
+            MiniStatCard(title: "Max Weight", value: maxWeightEver > 0 ? maxWeightEver.lbs : "—", color: .indigo)
             MiniStatCard(title: "Est. 1RM", value: bestOneRM > 0 ? "\(Int(bestOneRM)) lbs" : "—", color: .purple)
             MiniStatCard(title: "Total Sets", value: "\(exercise.sets.count)", color: .blue)
         }
@@ -367,7 +367,7 @@ struct SetHistoryRow: View {
                 .foregroundStyle(.secondary)
                 .frame(width: 40, alignment: .leading)
 
-            Text("\(Int(set.weight)) lbs")
+            Text(set.weight.lbs)
                 .font(.subheadline)
                 .fontWeight(.medium)
 

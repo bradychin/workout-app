@@ -24,7 +24,7 @@ struct PlanDetailView: View {
                         Spacer()
                         if let exercise = planEx.exercise, exercise.maxWeight > 0 {
                             VStack(alignment: .trailing, spacing: 2) {
-                                Text(String(format: "%.0f lbs", exercise.maxWeight))
+                                Text(exercise.maxWeight.lbs)
                                     .font(.caption)
                                     .fontWeight(.semibold)
                                     .foregroundStyle(.indigo)
