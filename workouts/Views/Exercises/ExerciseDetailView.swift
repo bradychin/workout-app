@@ -7,7 +7,7 @@ struct ExerciseDetailView: View {
 
     @State private var selectedMonth: Date? = nil
     @State private var showAddSet = false
-    @State private var selectedChart: ChartType = .oneRM
+    @State private var selectedChart: ChartType = .maxWeight
     @State private var showRename = false
     @State private var pendingName = ""
 
