@@ -318,57 +318,11 @@ struct InlineSetLogger: View {
                         .foregroundStyle(.secondary)
 
                     // Tappable number field
-                    HStack(spacing: 6) {
-                        TextField("0", text: $weightText)
-                            .keyboardType(.decimalPad)
-                            .focused($weightFocused)
-                            .multilineTextAlignment(.center)
-                            .font(.system(size: 56, weight: .bold, design: .rounded))
-                            .foregroundStyle(weightFocused ? .indigo : .primary)
-                            .toolbar {
-                                ToolbarItemGroup(placement: .keyboard) {
-                                    Spacer()
-                                    Button("Done") {
-                                        if let val = Double(weightText), val >= 0 {
-                                            weight = val
-                                            weightText = val.formatted
-                                        } else {
-                                            weightText = weight.formatted
-                                        }
-                                        weightFocused = false
-                                    }
-                                    .fontWeight(.semibold)
-                                }
-                            }
-                            .onChange(of: weightText) { _, newVal in
-                                if let val = Double(newVal), val >= 0 {
-                                    weight = val
-                                }
-                            }
-
-                        Image(systemName: "pencil")
-                            .font(.callout)
-                            .foregroundStyle(weightFocused ? .indigo : .secondary)
-                            .padding(.top, 8)
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
-                    .frame(width: 200)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(weightFocused ? Color.indigo.opacity(0.08) : Color(.secondarySystemBackground))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(weightFocused ? Color.indigo : Color.clear, lineWidth: 1.5)
-                    )
-                    .onTapGesture { weightFocused = true }
-
-                    if !weightFocused {
-                        Text("Tap to edit")
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
-                    }
+                    SetWeightView(weight: $weight,
+                                  fontSize: 56,
+                                  cardWidth: 200,
+                                  verticalPadding: 12,
+                                  horizontalPadding: 20)
                 }
 
                 // Reps picker
