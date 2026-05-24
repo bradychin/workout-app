@@ -288,8 +288,10 @@ struct InlineSetLogger: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var weight: Double
+    @State private var weightText: String
     @State private var reps: Int
     @State private var difficulty: Int
+    @FocusState private var weightFocused: Bool
 
     init(exerciseName: String, title: String = "Log Set", lastWeight: Double, lastReps: Int, lastDifficulty: Int = 7, onSave: @escaping (Double, Int, Int) -> Void) {
         self.exerciseName = exerciseName
@@ -298,7 +300,9 @@ struct InlineSetLogger: View {
         self.lastReps = lastReps
         self.lastDifficulty = lastDifficulty
         self.onSave = onSave
-        self._weight = State(initialValue: lastWeight > 0 ? lastWeight : 45)
+        let w = lastWeight > 0 ? lastWeight : 45
+        self._weight = State(initialValue: w)
+        self._weightText = State(initialValue: w.formatted)
         self._reps = State(initialValue: lastReps > 0 ? lastReps : 10)
         self._difficulty = State(initialValue: lastDifficulty)
     }
@@ -307,50 +311,63 @@ struct InlineSetLogger: View {
         NavigationStack {
             ScrollView {
               VStack(spacing: 24) {
-                // Weight picker
-                VStack(spacing: 8) {
+                // Weight entry
+                VStack(spacing: 6) {
                     Text("Weight (lbs)")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
 
-                    HStack(spacing: 20) {
-                        Button { weight = max(0, weight - 1) } label: {
-                            Image(systemName: "minus.circle.fill")
-                                .font(.title)
-                                .foregroundStyle(.indigo)
-                        }
-                        .buttonStyle(.plain)
+                    // Tappable number field
+                    HStack(spacing: 6) {
+                        TextField("0", text: $weightText)
+                            .keyboardType(.decimalPad)
+                            .focused($weightFocused)
+                            .multilineTextAlignment(.center)
+                            .font(.system(size: 56, weight: .bold, design: .rounded))
+                            .foregroundStyle(weightFocused ? .indigo : .primary)
+                            .toolbar {
+                                ToolbarItemGroup(placement: .keyboard) {
+                                    Spacer()
+                                    Button("Done") {
+                                        if let val = Double(weightText), val >= 0 {
+                                            weight = val
+                                            weightText = val.formatted
+                                        } else {
+                                            weightText = weight.formatted
+                                        }
+                                        weightFocused = false
+                                    }
+                                    .fontWeight(.semibold)
+                                }
+                            }
+                            .onChange(of: weightText) { _, newVal in
+                                if let val = Double(newVal), val >= 0 {
+                                    weight = val
+                                }
+                            }
 
-                        Text(weight.formatted)
-                            .font(.system(size: 48, weight: .bold, design: .rounded))
-                            .frame(minWidth: 120, alignment: .center)
-
-                        Button { weight += 1 } label: {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.title)
-                                .foregroundStyle(.indigo)
-                        }
-                        .buttonStyle(.plain)
+                        Image(systemName: "pencil")
+                            .font(.callout)
+                            .foregroundStyle(weightFocused ? .indigo : .secondary)
+                            .padding(.top, 8)
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .frame(width: 200)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(weightFocused ? Color.indigo.opacity(0.08) : Color(.secondarySystemBackground))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(weightFocused ? Color.indigo : Color.clear, lineWidth: 1.5)
+                    )
+                    .onTapGesture { weightFocused = true }
 
-                    HStack(spacing: 8) {
-                        ForEach([0.5, 5, 10], id: \.self) { delta in
-                            Button("-\(delta, specifier: "%.2g")") { weight = max(0, weight - delta) }
-                                .font(.caption)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color(.secondarySystemBackground))
-                                .clipShape(Capsule())
-                                .buttonStyle(.plain)
-
-                            Button("+\(delta, specifier: "%.2g")") { weight += delta }
-                                .font(.caption)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color(.secondarySystemBackground))
-                                .clipShape(Capsule())
-                                .buttonStyle(.plain)
-                        }
+                    if !weightFocused {
+                        Text("Tap to edit")
+                            .font(.caption2)
+                            .foregroundStyle(.tertiary)
                     }
                 }
 
