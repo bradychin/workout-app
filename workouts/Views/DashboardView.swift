@@ -226,7 +226,7 @@ struct DashboardView: View {
                             .font(.subheadline)
                             .fontWeight(.semibold)
                             .foregroundStyle(.secondary)
-
+                        Divider()
                         let exerciseGroups = Dictionary(grouping: daySets) { $0.exercise?.name ?? "Unknown" }
                         ForEach(Array(exerciseGroups.keys.sorted()), id: \.self) { exName in
                             let exSets = exerciseGroups[exName] ?? []
