@@ -4,6 +4,7 @@ import SwiftData
 struct PlansView: View {
     @Query(sort: \WorkoutPlan.createdAt) private var plans: [WorkoutPlan]
     @Environment(\.modelContext) private var modelContext
+    @Environment(AppTheme.self) private var theme
     @State private var showCreatePlan = false
 
     var body: some View {
@@ -17,7 +18,7 @@ struct PlansView: View {
                     } actions: {
                         Button("Create Plan") { showCreatePlan = true }
                             .buttonStyle(.borderedProminent)
-                            .tint(.indigo)
+                            .tint(theme.accent)
                     }
                 } else {
                     List {
@@ -42,7 +43,7 @@ struct PlansView: View {
                     } label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
-                            .foregroundStyle(.indigo)
+                            .foregroundStyle(theme.accent)
                     }
                 }
             }
@@ -91,4 +92,5 @@ struct PlanRowView: View {
     PlansView()
         .modelContainer(for: [Exercise.self, WorkoutSet.self, WorkoutPlan.self, PlanExercise.self], inMemory: true)
         .environment(WorkoutSession())
+        .environment(AppTheme())
 }

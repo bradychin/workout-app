@@ -4,6 +4,7 @@ import SwiftData
 struct SettingsView: View {
     @Query(sort: \WorkoutSet.date) private var allSets: [WorkoutSet]
     @Query private var allExercises: [Exercise]
+    @Environment(AppTheme.self) private var theme
 
     @State private var exportItem: CSVExportItem?
     @State private var isExporting = false
@@ -13,6 +14,42 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             List {
+                // Appearance
+                Section {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Accent Color")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 8), spacing: 12) {
+                            ForEach(AppTheme.options) { option in
+                                Button {
+                                    theme.accentID = option.id
+                                } label: {
+                                    ZStack {
+                                        Circle()
+                                            .fill(option.color)
+                                            .frame(width: 34, height: 34)
+                                        if theme.accentID == option.id {
+                                            Circle()
+                                                .strokeBorder(.white, lineWidth: 2)
+                                                .frame(width: 34, height: 34)
+                                            Image(systemName: "checkmark")
+                                                .font(.caption2)
+                                                .fontWeight(.bold)
+                                                .foregroundStyle(.white)
+                                        }
+                                    }
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+                    .padding(.vertical, 4)
+                } header: {
+                    Text("Appearance")
+                }
+
                 Section {
                     exportRow
                 } header: {
@@ -47,7 +84,7 @@ struct SettingsView: View {
         } label: {
             HStack {
                 Label("Export to CSV", systemImage: "square.and.arrow.up")
-                    .foregroundStyle(.indigo)
+                    .foregroundStyle(theme.accent)
                 Spacer()
                 if isExporting {
                     ProgressView()
@@ -146,4 +183,5 @@ struct ShareSheet: UIViewControllerRepresentable {
 #Preview {
     SettingsView()
         .modelContainer(for: [Exercise.self, WorkoutSet.self, WorkoutPlan.self, PlanExercise.self], inMemory: true)
+        .environment(AppTheme())
 }

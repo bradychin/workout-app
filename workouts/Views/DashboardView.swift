@@ -5,6 +5,7 @@ import Charts
 struct DashboardView: View {
     @Query(sort: \WorkoutSet.date, order: .reverse) private var allSets: [WorkoutSet]
     @Query private var exercises: [Exercise]
+    @Environment(AppTheme.self) private var theme
     @State private var showAddSet = false
 
     private var calendar: Calendar { Calendar.current }
@@ -78,7 +79,7 @@ struct DashboardView: View {
                     } label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
-                            .foregroundStyle(.indigo)
+                            .foregroundStyle(theme.accent)
                     }
                 }
             }
@@ -101,7 +102,7 @@ struct DashboardView: View {
                     title: "Total Volume",
                     value: volumeThisWeek > 0 ? String(format: "%.0f lbs", volumeThisWeek) : "—",
                     icon: "scalemass.fill",
-                    color: .indigo
+                    color: theme.accent
                 )
                 StatCard(
                     title: "Workout Days",
@@ -132,7 +133,7 @@ struct DashboardView: View {
                     )
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [.indigo, .purple],
+                            colors: [theme.accent, theme.accent.opacity(0.6)],
                             startPoint: .bottom,
                             endPoint: .top
                         )
@@ -190,7 +191,7 @@ struct DashboardView: View {
                                 Text(String(format: "%.0f lbs", rm))
                                     .font(.subheadline)
                                     .fontWeight(.semibold)
-                                    .foregroundStyle(.indigo)
+                                    .foregroundStyle(theme.accent)
                             } else {
                                 Text("No data")
                                     .font(.subheadline)
@@ -240,7 +241,7 @@ struct DashboardView: View {
                                 if let maxW = exSets.map(\.weight).max() {
                                     Text("\(maxW.formatted) lbs max")
                                         .font(.caption)
-                                        .foregroundStyle(.indigo)
+                                        .foregroundStyle(theme.accent)
                                 }
                             }
                         }
@@ -294,4 +295,5 @@ struct CardContainer<Content: View>: View {
 #Preview {
     DashboardView()
         .modelContainer(for: [Exercise.self, WorkoutSet.self, WorkoutPlan.self, PlanExercise.self], inMemory: true)
+        .environment(AppTheme())
 }

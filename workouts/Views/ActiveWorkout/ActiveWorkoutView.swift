@@ -5,6 +5,7 @@ struct ActiveWorkoutView: View {
     @Environment(WorkoutSession.self) private var workoutSession
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppTheme.self) private var theme
 
     @State private var loggingFor: PlanExercise?
     @State private var editingSet: EditSetTarget?
@@ -58,7 +59,7 @@ struct ActiveWorkoutView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Finish") { showFinishConfirm = true }
                         .fontWeight(.semibold)
-                        .foregroundStyle(.indigo)
+                        .foregroundStyle(theme.accent)
                 }
             }
             .sheet(item: $historyFor) { exercise in
@@ -119,7 +120,7 @@ struct ActiveWorkoutView: View {
                     Text(workoutSession.startTime, style: .timer)
                         .font(.title2)
                         .fontWeight(.bold)
-                        .foregroundStyle(.indigo)
+                        .foregroundStyle(theme.accent)
                         .monospacedDigit()
                 }
                 Spacer()
@@ -150,6 +151,8 @@ struct ActiveExerciseCard: View {
     let onEditSet: (Int) -> Void
     let onViewHistory: () -> Void
 
+    @Environment(AppTheme.self) private var theme
+
     private var targetSets: Int { planExercise.targetSets }
     private var setsLogged: Int { loggedSets.count }
     private var isComplete: Bool { setsLogged >= targetSets }
@@ -170,9 +173,9 @@ struct ActiveExerciseCard: View {
                     Button(action: onViewHistory) {
                         Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
                             .font(.title3)
-                            .foregroundStyle(.indigo)
+                            .foregroundStyle(theme.accent)
                             .padding(6)
-                            .background(Color.indigo.opacity(0.1))
+                            .background(theme.accent.opacity(0.1))
                             .clipShape(Circle())
                     }
                     .buttonStyle(.plain)
@@ -187,11 +190,11 @@ struct ActiveExerciseCard: View {
                 HStack(spacing: 8) {
                     ForEach(0..<targetSets, id: \.self) { setIndex in
                         Circle()
-                            .fill(setIndex < setsLogged ? Color.indigo : Color(.systemFill))
+                            .fill(setIndex < setsLogged ? theme.accent : Color(.systemFill))
                             .frame(width: 12, height: 12)
                             .overlay(
                                 Circle()
-                                    .stroke(setIndex < setsLogged ? Color.indigo : Color(.separator), lineWidth: 1)
+                                    .stroke(setIndex < setsLogged ? theme.accent : Color(.separator), lineWidth: 1)
                             )
                     }
                     Spacer()
@@ -241,7 +244,7 @@ struct ActiveExerciseCard: View {
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background(isComplete ? Color(.systemFill) : Color.indigo)
+                    .background(isComplete ? Color(.systemFill) : theme.accent)
                     .foregroundStyle(isComplete ? Color.secondary : Color.white)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
@@ -287,6 +290,7 @@ struct InlineSetLogger: View {
     let onSave: (Double, Int, Int) -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppTheme.self) private var theme
     @State private var weight: Double
     @State private var weightText: String
     @State private var reps: Int
@@ -335,7 +339,7 @@ struct InlineSetLogger: View {
                         Button { reps = max(1, reps - 1) } label: {
                             Image(systemName: "minus.circle.fill")
                                 .font(.title)
-                                .foregroundStyle(.indigo)
+                                .foregroundStyle(theme.accent)
                         }
                         .buttonStyle(.plain)
 
@@ -346,7 +350,7 @@ struct InlineSetLogger: View {
                         Button { reps += 1 } label: {
                             Image(systemName: "plus.circle.fill")
                                 .font(.title)
-                                .foregroundStyle(.indigo)
+                                .foregroundStyle(theme.accent)
                         }
                         .buttonStyle(.plain)
                     }
@@ -367,7 +371,7 @@ struct InlineSetLogger: View {
                         get: { Double(difficulty) },
                         set: { difficulty = Int($0) }
                     ), in: 1...10, step: 1)
-                    .tint(.indigo)
+                    .tint(theme.accent)
                 }
                 .padding(.horizontal)
               }
@@ -391,7 +395,7 @@ struct InlineSetLogger: View {
                         .font(.headline)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.indigo)
+                        .background(theme.accent)
                         .foregroundStyle(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
@@ -411,6 +415,7 @@ struct InlineSetLogger: View {
 struct ExerciseHistorySheet: View {
     let exercise: Exercise
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppTheme.self) private var theme
 
     private var recentSessions: [(Date, [WorkoutSet])] {
         let calendar = Calendar.current
@@ -478,7 +483,7 @@ struct ExerciseHistorySheet: View {
             Text(value)
                 .font(.subheadline)
                 .fontWeight(.bold)
-                .foregroundStyle(.indigo)
+                .foregroundStyle(theme.accent)
             Text(label)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
@@ -492,4 +497,5 @@ struct ExerciseHistorySheet: View {
     ActiveWorkoutView()
         .modelContainer(for: [Exercise.self, WorkoutSet.self, WorkoutPlan.self, PlanExercise.self], inMemory: true)
         .environment(WorkoutSession())
+        .environment(AppTheme())
 }

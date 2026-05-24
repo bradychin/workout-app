@@ -4,6 +4,7 @@ import SwiftData
 struct AddSetView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppTheme.self) private var theme
     @Query(sort: \Exercise.muscleGroup) private var exercises: [Exercise]
 
     var preselectedExercise: Exercise?
@@ -66,13 +67,13 @@ struct AddSetView: View {
                             Spacer()
                             Text("\(difficulty)/10")
                                 .fontWeight(.semibold)
-                                .foregroundStyle(.indigo)
+                                .foregroundStyle(theme.accent)
                         }
                         Slider(value: Binding(
                             get: { Double(difficulty) },
                             set: { difficulty = Int($0) }
                         ), in: 1...10, step: 1)
-                        .tint(.indigo)
+                        .tint(theme.accent)
                         HStack {
                             Text("Easy")
                                 .font(.caption2)
@@ -153,6 +154,7 @@ struct ExerciseSearchSheet: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppTheme.self) private var theme
     @State private var searchText = ""
     @State private var showCreateSheet = false
 
@@ -183,9 +185,9 @@ struct ExerciseSearchSheet: View {
                         } label: {
                             HStack {
                                 Image(systemName: "plus.circle.fill")
-                                    .foregroundStyle(.indigo)
+                                    .foregroundStyle(theme.accent)
                                 Text("Create \"\(searchText)\"")
-                                    .foregroundStyle(.indigo)
+                                    .foregroundStyle(theme.accent)
                                     .fontWeight(.medium)
                             }
                         }

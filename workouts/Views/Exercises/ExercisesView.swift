@@ -3,6 +3,7 @@ import SwiftData
 
 struct ExercisesView: View {
     @Query(sort: \Exercise.muscleGroup) private var exercises: [Exercise]
+    @Environment(AppTheme.self) private var theme
     @State private var searchText = ""
     @State private var showAddSet = false
     @State private var selectedExerciseForSet: Exercise?
@@ -57,7 +58,7 @@ struct ExercisesView: View {
                             } header: {
                                 HStack {
                                     Image(systemName: muscleGroupIcon(group))
-                                        .foregroundStyle(.indigo)
+                                        .foregroundStyle(theme.accent)
                                     Text(group)
                                         .fontWeight(.semibold)
                                 }
@@ -77,7 +78,7 @@ struct ExercisesView: View {
                     } label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
-                            .foregroundStyle(.indigo)
+                            .foregroundStyle(theme.accent)
                     }
                 }
             }
@@ -101,6 +102,7 @@ struct ExercisesView: View {
 
 struct ExerciseRowView: View {
     let exercise: Exercise
+    @Environment(AppTheme.self) private var theme
 
     var body: some View {
         HStack(spacing: 12) {
@@ -133,7 +135,7 @@ struct ExerciseRowView: View {
                     Text(exercise.maxWeight.lbs)
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                        .foregroundStyle(.indigo)
+                        .foregroundStyle(theme.accent)
                     Text("max")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
@@ -147,4 +149,5 @@ struct ExerciseRowView: View {
 #Preview {
     ExercisesView()
         .modelContainer(for: [Exercise.self, WorkoutSet.self, WorkoutPlan.self, PlanExercise.self], inMemory: true)
+        .environment(AppTheme())
 }

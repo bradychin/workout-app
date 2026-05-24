@@ -14,12 +14,14 @@ struct workoutsApp: App {
     }
 
     @State private var workoutSession = WorkoutSession()
+    @State private var appTheme = AppTheme()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .modelContainer(modelContainer)
                 .environment(workoutSession)
+                .environment(appTheme)
         }
     }
 }

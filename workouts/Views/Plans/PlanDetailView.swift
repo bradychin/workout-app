@@ -4,6 +4,7 @@ import SwiftData
 struct PlanDetailView: View {
     let plan: WorkoutPlan
     @Environment(WorkoutSession.self) private var workoutSession
+    @Environment(AppTheme.self) private var theme
     @State private var showEditPlan = false
 
     var body: some View {
@@ -27,7 +28,7 @@ struct PlanDetailView: View {
                                 Text(exercise.maxWeight.lbs)
                                     .font(.caption)
                                     .fontWeight(.semibold)
-                                    .foregroundStyle(.indigo)
+                                    .foregroundStyle(theme.accent)
                                 Text("max")
                                     .font(.caption2)
                                     .foregroundStyle(.secondary)
@@ -46,7 +47,7 @@ struct PlanDetailView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button("Edit") { showEditPlan = true }
-                    .foregroundStyle(.indigo)
+                    .foregroundStyle(theme.accent)
             }
         }
         .safeAreaInset(edge: .bottom) {
@@ -65,7 +66,7 @@ struct PlanDetailView: View {
                 .font(.headline)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(workoutSession.isActive ? Color(.systemFill) : Color.indigo)
+                .background(workoutSession.isActive ? Color(.systemFill) : theme.accent)
                 .foregroundStyle(workoutSession.isActive ? Color.secondary : Color.white)
                 .clipShape(RoundedRectangle(cornerRadius: 16))
         }
@@ -91,4 +92,5 @@ struct PlanDetailView: View {
     }
     .modelContainer(for: [Exercise.self, WorkoutSet.self, WorkoutPlan.self, PlanExercise.self], inMemory: true)
     .environment(WorkoutSession())
+    .environment(AppTheme())
 }

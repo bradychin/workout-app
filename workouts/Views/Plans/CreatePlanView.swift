@@ -4,6 +4,7 @@ import SwiftData
 struct CreatePlanView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppTheme.self) private var theme
     @Query(sort: \Exercise.muscleGroup) private var exercises: [Exercise]
 
     var editingPlan: WorkoutPlan?
@@ -52,15 +53,14 @@ struct CreatePlanView: View {
                         showExercisePicker = true
                     } label: {
                         Label("Add Exercise", systemImage: "plus.circle")
-                            .foregroundStyle(.indigo)
+                            .foregroundStyle(theme.accent)
                     }
                 } header: {
                     HStack {
                         Text("Exercises")
                         Spacer()
                         if !selectedExercises.isEmpty {
-                            EditButton()
-                                .font(.caption)
+                            EditButton().font(.caption)
                         }
                     }
                 }
@@ -109,13 +109,8 @@ struct CreatePlanView: View {
     private func updatePlan() {
         guard let plan = editingPlan else { return }
         plan.name = planName.trimmingCharacters(in: .whitespaces)
-
-        // Remove old plan exercises
-        for planEx in plan.planExercises {
-            modelContext.delete(planEx)
-        }
+        for planEx in plan.planExercises { modelContext.delete(planEx) }
         plan.planExercises = []
-
         applyExercises(to: plan)
         dismiss()
     }
@@ -176,6 +171,7 @@ struct ExercisePickerView: View {
     let onSelect: (Exercise) -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @Environment(AppTheme.self) private var theme
     @State private var searchText = ""
 
     private var filteredGrouped: [(String, [Exercise])] {
@@ -202,7 +198,7 @@ struct ExercisePickerView: View {
                                     Spacer()
                                     if selected.contains(exercise.persistentModelID) {
                                         Image(systemName: "checkmark")
-                                            .foregroundStyle(.indigo)
+                                            .foregroundStyle(theme.accent)
                                     }
                                 }
                             }
@@ -225,4 +221,5 @@ struct ExercisePickerView: View {
 #Preview {
     CreatePlanView()
         .modelContainer(for: [Exercise.self, WorkoutSet.self, WorkoutPlan.self, PlanExercise.self], inMemory: true)
+        .environment(AppTheme())
 }

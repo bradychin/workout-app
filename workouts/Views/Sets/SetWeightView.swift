@@ -8,6 +8,7 @@ struct SetWeightView: View {
     var verticalPadding: CGFloat = 10
     var horizontalPadding: CGFloat = 16
 
+    @Environment(AppTheme.self) private var theme
     @State private var weightText: String = ""
     @FocusState private var focused: Bool
 
@@ -27,57 +28,59 @@ struct SetWeightView: View {
     }
 
     var body: some View {
-        HStack(spacing: 6) {
-            TextField("0", text: $weightText)
-                .keyboardType(.decimalPad)
-                .focused($focused)
-                .multilineTextAlignment(.center)
-                .font(.system(size: fontSize, weight: .bold, design: .rounded))
-                .foregroundStyle(focused ? .indigo : .primary)
-                .toolbar {
-                    ToolbarItemGroup(placement: .keyboard) {
-                        Spacer()
-                        Button("Done") {
-                            commitText()
-                            focused = false
+        VStack(spacing: 6) {
+            HStack(spacing: 6) {
+                TextField("0", text: $weightText)
+                    .keyboardType(.decimalPad)
+                    .focused($focused)
+                    .multilineTextAlignment(.center)
+                    .font(.system(size: fontSize, weight: .bold, design: .rounded))
+                    .foregroundStyle(focused ? theme.accent : .primary)
+                    .toolbar {
+                        ToolbarItemGroup(placement: .keyboard) {
+                            Spacer()
+                            Button("Done") {
+                                commitText()
+                                focused = false
+                            }
+                            .fontWeight(.semibold)
                         }
-                        .fontWeight(.semibold)
                     }
-                }
-                .onChange(of: weightText) { _, newVal in
-                    if let val = Double(newVal), val >= 0 {
-                        weight = val
+                    .onChange(of: weightText) { _, newVal in
+                        if let val = Double(newVal), val >= 0 {
+                            weight = val
+                        }
                     }
-                }
-                .onChange(of: weight) { _, newVal in
-                    let formatted = newVal.formatted
-                    if weightText != formatted {
-                        weightText = formatted
+                    .onChange(of: weight) { _, newVal in
+                        let formatted = newVal.formatted
+                        if weightText != formatted {
+                            weightText = formatted
+                        }
                     }
-                }
 
-            Image(systemName: "pencil")
-                .font(.caption)
-                .foregroundStyle(focused ? .indigo : .secondary)
-                .padding(.top, fontSize * 0.1)
-        }
-        .padding(.horizontal, horizontalPadding)
-        .padding(.vertical, verticalPadding)
-        .frame(width: cardWidth)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .fill(focused ? Color.indigo.opacity(0.08) : Color(.secondarySystemBackground))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(focused ? Color.indigo : Color.clear, lineWidth: 1.5)
-        )
-        .onTapGesture { focused = true }
+                Image(systemName: "pencil")
+                    .font(.caption)
+                    .foregroundStyle(focused ? theme.accent : .secondary)
+                    .padding(.top, fontSize * 0.1)
+            }
+            .padding(.horizontal, horizontalPadding)
+            .padding(.vertical, verticalPadding)
+            .frame(width: cardWidth)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(focused ? theme.accent.opacity(0.08) : Color(.secondarySystemBackground))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(focused ? theme.accent : Color.clear, lineWidth: 1.5)
+            )
+            .onTapGesture { focused = true }
 
-        if !focused {
-            Text("Tap to edit")
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
+            if !focused {
+                Text("Tap to edit")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+            }
         }
     }
 
@@ -108,4 +111,5 @@ struct SetWeightView: View {
             .foregroundStyle(.secondary)
     }
     .padding()
+    .environment(AppTheme())
 }

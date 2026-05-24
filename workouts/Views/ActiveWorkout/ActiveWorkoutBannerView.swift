@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ActiveWorkoutBannerView: View {
     @Environment(WorkoutSession.self) private var workoutSession
+    @Environment(AppTheme.self) private var theme
 
     var body: some View {
         @Bindable var session = workoutSession
@@ -47,8 +48,8 @@ struct ActiveWorkoutBannerView: View {
             .padding(.vertical, 12)
             .background(
                 RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.indigo)
-                    .shadow(color: .indigo.opacity(0.4), radius: 8, y: 4)
+                    .fill(theme.accent)
+                    .shadow(color: theme.accent.opacity(0.4), radius: 8, y: 4)
             )
         }
         .buttonStyle(.plain)
@@ -57,4 +58,6 @@ struct ActiveWorkoutBannerView: View {
 
 #Preview {
     ActiveWorkoutBannerView()
+        .environment(WorkoutSession())
+        .environment(AppTheme())
 }

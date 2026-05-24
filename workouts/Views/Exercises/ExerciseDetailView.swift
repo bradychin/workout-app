@@ -5,6 +5,7 @@ import Charts
 struct ExerciseDetailView: View {
     let exercise: Exercise
 
+    @Environment(AppTheme.self) private var theme
     @State private var selectedMonth: Date? = nil
     @State private var showAddSet = false
     @State private var selectedChart: ChartType = .maxWeight
@@ -32,7 +33,6 @@ struct ExerciseDetailView: View {
         return exercise.sets.filter { $0.date >= interval.start && $0.date < interval.end }
     }
 
-    // Group sets by session date, compute per-session stats
     private struct SessionData: Identifiable {
         let id = UUID()
         let date: Date
@@ -58,32 +58,16 @@ struct ExerciseDetailView: View {
         filteredSets.sorted { $0.date > $1.date }
     }
 
-    // Stats
-    private var maxWeightEver: Double {
-        exercise.sets.map(\.weight).max() ?? 0
-    }
-    private var bestOneRM: Double {
-        exercise.estimatedOneRM
-    }
-    private var totalVolume: Double {
-        exercise.totalVolume
-    }
+    private var maxWeightEver: Double { exercise.sets.map(\.weight).max() ?? 0 }
+    private var bestOneRM: Double { exercise.estimatedOneRM }
+    private var totalVolume: Double { exercise.totalVolume }
 
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // Stats row
                 statsRow
-
-                // Month filter
-                if !availableMonths.isEmpty {
-                    monthFilterRow
-                }
-
-                // Chart picker
+                if !availableMonths.isEmpty { monthFilterRow }
                 chartPickerSection
-
-                // History
                 historySection
             }
             .padding()
@@ -98,14 +82,14 @@ struct ExerciseDetailView: View {
                         showRename = true
                     } label: {
                         Image(systemName: "pencil")
-                            .foregroundStyle(.indigo)
+                            .foregroundStyle(theme.accent)
                     }
                     Button {
                         showAddSet = true
                     } label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
-                            .foregroundStyle(.indigo)
+                            .foregroundStyle(theme.accent)
                     }
                 }
             }
@@ -117,9 +101,7 @@ struct ExerciseDetailView: View {
             TextField("Exercise name", text: $pendingName)
             Button("Save") {
                 let trimmed = pendingName.trimmingCharacters(in: .whitespaces)
-                if !trimmed.isEmpty {
-                    exercise.name = trimmed
-                }
+                if !trimmed.isEmpty { exercise.name = trimmed }
             }
             Button("Cancel", role: .cancel) {}
         } message: {
@@ -131,22 +113,23 @@ struct ExerciseDetailView: View {
 
     private var statsRow: some View {
         HStack(spacing: 12) {
-            MiniStatCard(title: "Max Weight", value: maxWeightEver > 0 ? maxWeightEver.lbs : "—", color: .indigo)
-            MiniStatCard(title: "Est. 1RM", value: bestOneRM > 0 ? "\(Int(bestOneRM)) lbs" : "—", color: .purple)
-            MiniStatCard(title: "Total Sets", value: "\(exercise.sets.count)", color: .blue)
+            MiniStatCard(title: "Max Weight", value: maxWeightEver > 0 ? maxWeightEver.lbs : "—", color: theme.accent)
+            MiniStatCard(title: "Est. 1RM", value: bestOneRM > 0 ? "\(Int(bestOneRM)) lbs" : "—", color: theme.accent.opacity(0.7))
+            MiniStatCard(title: "Total Sets", value: "\(exercise.sets.count)", color: .secondary)
         }
     }
 
     private var monthFilterRow: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                MonthChip(title: "All", isSelected: selectedMonth == nil) {
+                MonthChip(title: "All", isSelected: selectedMonth == nil, accent: theme.accent) {
                     withAnimation { selectedMonth = nil }
                 }
                 ForEach(availableMonths, id: \.self) { month in
                     MonthChip(
                         title: month.formatted(.dateTime.month(.abbreviated).year()),
-                        isSelected: selectedMonth == month
+                        isSelected: selectedMonth == month,
+                        accent: theme.accent
                     ) {
                         withAnimation { selectedMonth = month }
                     }
@@ -183,13 +166,13 @@ struct ExerciseDetailView: View {
     private var chartContent: some View {
         Chart(sessionData) { session in
             switch selectedChart {
-            
+
             case .maxWeight:
                 LineMark(
                     x: .value("Date", session.date),
                     y: .value("Max Weight", session.maxWeight)
                 )
-                .foregroundStyle(.purple)
+                .foregroundStyle(theme.accent)
                 .interpolationMethod(.catmullRom)
 
                 AreaMark(
@@ -197,7 +180,7 @@ struct ExerciseDetailView: View {
                     y: .value("Max Weight", session.maxWeight)
                 )
                 .foregroundStyle(
-                    LinearGradient(colors: [.purple.opacity(0.3), .clear], startPoint: .top, endPoint: .bottom)
+                    LinearGradient(colors: [theme.accent.opacity(0.3), .clear], startPoint: .top, endPoint: .bottom)
                 )
                 .interpolationMethod(.catmullRom)
 
@@ -205,27 +188,25 @@ struct ExerciseDetailView: View {
                     x: .value("Date", session.date),
                     y: .value("Max Weight", session.maxWeight)
                 )
-                .foregroundStyle(.purple)
+                .foregroundStyle(theme.accent)
                 .symbolSize(30)
-                
+
             case .volume:
                 BarMark(
                     x: .value("Date", session.date, unit: .day),
                     y: .value("Volume", session.totalVolume)
                 )
                 .foregroundStyle(
-                    LinearGradient(colors: [.purple, .indigo], startPoint: .bottom, endPoint: .top)
+                    LinearGradient(colors: [theme.accent, theme.accent.opacity(0.6)], startPoint: .bottom, endPoint: .top)
                 )
                 .cornerRadius(4)
 
-            
-                
             case .oneRM:
                 LineMark(
                     x: .value("Date", session.date),
                     y: .value("Est. 1RM", session.maxOneRM)
                 )
-                .foregroundStyle(.indigo)
+                .foregroundStyle(theme.accent)
                 .interpolationMethod(.catmullRom)
 
                 AreaMark(
@@ -233,7 +214,7 @@ struct ExerciseDetailView: View {
                     y: .value("Est. 1RM", session.maxOneRM)
                 )
                 .foregroundStyle(
-                    LinearGradient(colors: [.indigo.opacity(0.3), .clear], startPoint: .top, endPoint: .bottom)
+                    LinearGradient(colors: [theme.accent.opacity(0.3), .clear], startPoint: .top, endPoint: .bottom)
                 )
                 .interpolationMethod(.catmullRom)
 
@@ -241,7 +222,7 @@ struct ExerciseDetailView: View {
                     x: .value("Date", session.date),
                     y: .value("Est. 1RM", session.maxOneRM)
                 )
-                .foregroundStyle(.indigo)
+                .foregroundStyle(theme.accent)
                 .symbolSize(30)
             }
         }
@@ -253,8 +234,7 @@ struct ExerciseDetailView: View {
         }
         .chartYAxis {
             AxisMarks(position: .leading) { value in
-                AxisValueLabel()
-                    .font(.caption2)
+                AxisValueLabel().font(.caption2)
                 AxisGridLine()
             }
         }
@@ -273,7 +253,6 @@ struct ExerciseDetailView: View {
                         .padding(.vertical, 8)
                 }
             } else {
-                // Group by day
                 let grouped = Dictionary(grouping: sortedSets) { calendar.startOfDay(for: $0.date) }
                 let sortedDays = grouped.keys.sorted(by: >)
 
@@ -312,6 +291,7 @@ struct MiniStatCard: View {
 struct MonthChip: View {
     let title: String
     let isSelected: Bool
+    let accent: Color
     let action: () -> Void
 
     var body: some View {
@@ -321,14 +301,13 @@ struct MonthChip: View {
                 .fontWeight(isSelected ? .semibold : .regular)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(isSelected ? Color.indigo : Color(.secondarySystemBackground))
+                .background(isSelected ? accent : Color(.secondarySystemBackground))
                 .foregroundStyle(isSelected ? .white : .primary)
                 .clipShape(Capsule())
         }
         .buttonStyle(.plain)
     }
 }
-
 
 #Preview {
     NavigationStack {
@@ -338,4 +317,5 @@ struct MonthChip: View {
         }())
     }
     .modelContainer(for: [Exercise.self, WorkoutSet.self, WorkoutPlan.self, PlanExercise.self], inMemory: true)
+    .environment(AppTheme())
 }

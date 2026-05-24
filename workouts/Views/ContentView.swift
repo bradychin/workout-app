@@ -4,6 +4,7 @@ import SwiftData
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(WorkoutSession.self) private var workoutSession
+    @Environment(AppTheme.self) private var theme
     @State private var selectedTab = 0
 
     var body: some View {
@@ -27,7 +28,7 @@ struct ContentView: View {
                     .tabItem { Label("Settings", systemImage: "gearshape.fill") }
                     .tag(3)
             }
-            .tint(.indigo)
+            .tint(theme.accent)
             .task {
                 DataSeeder.seedIfNeeded(modelContext)
             }
@@ -49,4 +50,5 @@ struct ContentView: View {
     ContentView()
         .modelContainer(for: [Exercise.self, WorkoutSet.self, WorkoutPlan.self, PlanExercise.self], inMemory: true)
         .environment(WorkoutSession())
+        .environment(AppTheme())
 }
