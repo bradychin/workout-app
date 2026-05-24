@@ -34,7 +34,7 @@ struct ContentView: View {
 
             // Floating active workout banner — visible from any tab
             if workoutSession.isActive {
-                ActiveWorkoutBanner()
+                ActiveWorkoutBannerView()
                     .padding(.horizontal)
                     .padding(.bottom, 60) // sit above the tab bar
             }
@@ -42,56 +42,6 @@ struct ContentView: View {
         .sheet(isPresented: $session.showWorkout) {
             ActiveWorkoutView()
         }
-    }
-}
-
-// MARK: - Floating banner
-
-struct ActiveWorkoutBanner: View {
-    @Environment(WorkoutSession.self) private var workoutSession
-
-    var body: some View {
-        @Bindable var session = workoutSession
-
-        Button {
-            session.showWorkout = true
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "flame.fill")
-                    .foregroundStyle(.orange)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(workoutSession.activePlan?.name ?? "Workout")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.white)
-                    Text(workoutSession.startTime, style: .timer)
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.8))
-                        .monospacedDigit()
-                }
-
-                Spacer()
-
-                Text("\(workoutSession.totalSetsLogged) sets")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.white.opacity(0.8))
-
-                Image(systemName: "chevron.up")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.white.opacity(0.7))
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.indigo)
-                    .shadow(color: .indigo.opacity(0.4), radius: 8, y: 4)
-            )
-        }
-        .buttonStyle(.plain)
     }
 }
 
