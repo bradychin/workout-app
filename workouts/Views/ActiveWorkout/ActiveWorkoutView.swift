@@ -506,7 +506,7 @@ struct ExerciseHistorySheet: View {
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .frame(width: 40, alignment: .leading)
-                                Text("\(set.weight.lbs) × \(set.reps) reps")
+                        Text("\(set.weight.lbs) × \(set.reps) reps")
                             .font(.subheadline)
                         Spacer()
                         DifficultyBadge(difficulty: set.difficulty)
