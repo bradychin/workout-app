@@ -279,27 +279,7 @@ struct ExerciseDetailView: View {
 
                 ForEach(sortedDays, id: \.self) { day in
                     let daySets = (grouped[day] ?? []).sorted { $0.setNumber < $1.setNumber }
-                    CardContainer {
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack {
-                                Text(day, style: .date)
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                Spacer()
-                                Text("\(daySets.count) sets")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-
-                            Divider()
-
-                            VStack(spacing: 6) {
-                                ForEach(daySets) { set in
-                                    SetHistoryRow(set: set)
-                                }
-                            }
-                        }
-                    }
+                    HistoryCardView(date: day, sets: daySets)
                 }
             }
         }
@@ -349,47 +329,6 @@ struct MonthChip: View {
     }
 }
 
-struct SetHistoryRow: View {
-    let set: WorkoutSet
-
-    var difficultyColor: Color {
-        switch set.difficulty {
-        case 1...4: return .green
-        case 5...7: return .orange
-        default: return .red
-        }
-    }
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Text("Set \(set.setNumber)")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .frame(width: 40, alignment: .leading)
-
-            Text(set.weight.lbs)
-                .font(.subheadline)
-                .fontWeight(.medium)
-
-            Text("×")
-                .foregroundStyle(.secondary)
-
-            Text("\(set.reps) reps")
-                .font(.subheadline)
-
-            Spacer()
-
-            // Difficulty indicator
-            HStack(spacing: 2) {
-                ForEach(1...10, id: \.self) { i in
-                    Circle()
-                        .fill(i <= set.difficulty ? difficultyColor : Color(.systemFill))
-                        .frame(width: 5, height: 5)
-                }
-            }
-        }
-    }
-}
 
 #Preview {
     NavigationStack {

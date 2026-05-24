@@ -451,7 +451,7 @@ struct ExerciseHistorySheet: View {
                     } else {
                         VStack(spacing: 16) {
                             ForEach(recentSessions, id: \.0) { date, sets in
-                                sessionCard(date: date, sets: sets)
+                                HistoryCardView(date: date, sets: sets)
                             }
                         }
                         .padding(.horizontal)
@@ -485,38 +485,6 @@ struct ExerciseHistorySheet: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
-    }
-
-    private func sessionCard(date: Date, sets: [WorkoutSet]) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Text(date, style: .date)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                Spacer()
-                let sessionVolume = sets.reduce(0.0) { $0 + $1.volume }
-                Text(String(format: "%.0f lbs vol", sessionVolume))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            VStack(spacing: 6) {
-                ForEach(sets) { set in
-                    HStack {
-                        Text("Set \(set.setNumber)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .frame(width: 40, alignment: .leading)
-                        Text("\(set.weight.lbs) × \(set.reps) reps")
-                            .font(.subheadline)
-                        Spacer()
-                        DifficultyBadge(difficulty: set.difficulty)
-                    }
-                }
-            }
-        }
-        .padding(14)
-        .background(Color(.secondarySystemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
