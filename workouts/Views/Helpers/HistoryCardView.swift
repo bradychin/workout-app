@@ -23,6 +23,7 @@ struct HistoryCardView: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
+            Divider()
             VStack(spacing: 6) {
                 ForEach(sets) { set in
                     HStack {
