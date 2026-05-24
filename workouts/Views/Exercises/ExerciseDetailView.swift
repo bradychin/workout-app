@@ -113,9 +113,15 @@ struct ExerciseDetailView: View {
 
     private var statsRow: some View {
         HStack(spacing: 12) {
-            MiniStatCard(title: "Max Weight", value: maxWeightEver > 0 ? maxWeightEver.lbs : "—", color: theme.accent)
-            MiniStatCard(title: "Est. 1RM", value: bestOneRM > 0 ? "\(Int(bestOneRM)) lbs" : "—", color: theme.accent.opacity(0.7))
-            MiniStatCard(title: "Total Sets", value: "\(exercise.sets.count)", color: .secondary)
+            MiniStatCard(title: "Max Weight",
+                         value: maxWeightEver > 0 ? maxWeightEver.lbs : "—",
+                         color: theme.accent)
+            MiniStatCard(title: "Est. 1RM",
+                         value: bestOneRM > 0 ? "\(Int(bestOneRM)) lbs" : "—",
+                         color: theme.accent)
+            MiniStatCard(title: "Total Sets",
+                         value: "\(exercise.sets.count)",
+                         color: theme.accent)
         }
     }
 
