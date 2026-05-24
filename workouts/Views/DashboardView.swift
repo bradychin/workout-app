@@ -102,7 +102,7 @@ struct DashboardView: View {
                     title: "Total Volume",
                     value: volumeThisWeek > 0 ? String(format: "%.0f lbs", volumeThisWeek) : "—",
                     icon: "scalemass.fill",
-                    color: theme.accent
+                    color: .red
                 )
                 StatCard(
                     title: "Workout Days",
