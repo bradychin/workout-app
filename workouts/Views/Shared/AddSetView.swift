@@ -10,10 +10,12 @@ struct AddSetView: View {
 
     @State private var selectedExercise: Exercise?
     @State private var weight: Double = 45
+    @State private var weightText: String = "45"
     @State private var reps: Int = 10
     @State private var difficulty: Int = 7
     @State private var date: Date = Date()
     @State private var showExerciseSearch = false
+    @FocusState private var weightFocused: Bool
 
     init(preselectedExercise: Exercise? = nil) {
         self.preselectedExercise = preselectedExercise
@@ -41,53 +43,60 @@ struct AddSetView: View {
 
                 // Weight
                 Section("Weight (lbs)") {
-                    VStack {
-                        HStack {
-                            Button {
-                                weight = max(0, weight - 1)
-                            } label: {
-                                Image(systemName: "minus.circle.fill")
-                                    .foregroundStyle(.indigo)
-                            }
-                            .buttonStyle(.plain)
-                            
-                            Spacer()
-                            Text(weight.lbs)
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            Spacer()
-                            
-                            Button {
-                                weight += 1
-                            } label: {
-                                Image(systemName: "plus.circle.fill")
-                                    .foregroundStyle(.indigo)
-                            }
-                            .buttonStyle(.plain)
+                    VStack(spacing: 6) {
+                        HStack(spacing: 6) {
+                            TextField("0", text: $weightText)
+                                .keyboardType(.decimalPad)
+                                .focused($weightFocused)
+                                .multilineTextAlignment(.center)
+                                .font(.system(size: 34, weight: .bold, design: .rounded))
+                                .foregroundStyle(weightFocused ? .indigo : .primary)
+                                .toolbar {
+                                    ToolbarItemGroup(placement: .keyboard) {
+                                        Spacer()
+                                        Button("Done") {
+                                            if let val = Double(weightText), val >= 0 {
+                                                weight = val
+                                                weightText = val.formatted
+                                            } else {
+                                                weightText = weight.formatted
+                                            }
+                                            weightFocused = false
+                                        }
+                                        .fontWeight(.semibold)
+                                    }
+                                }
+                                .onChange(of: weightText) { _, newVal in
+                                    if let val = Double(newVal), val >= 0 {
+                                        weight = val
+                                    }
+                                }
+
+                            Image(systemName: "pencil")
+                                .font(.caption)
+                                .foregroundStyle(weightFocused ? .indigo : .secondary)
+                                .padding(.top, 4)
                         }
-                        
-                        Divider()
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .frame(width: 160)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(weightFocused ? Color.indigo.opacity(0.08) : Color(.secondarySystemBackground))
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14)
+                                .stroke(weightFocused ? Color.indigo : Color.clear, lineWidth: 1.5)
+                        )
+                        .onTapGesture { weightFocused = true }
 
-                        HStack(spacing: 8) {
-                            Spacer()
-                            ForEach([0.5, 5, 10], id: \.self) { delta in
-                                Button("-\(delta, specifier: "%.2g")") {
-                                    weight = max(0, weight - delta)
-                                }
-                                .font(.caption)
-                                .buttonStyle(.bordered)
-                                .tint(.indigo)
-
-                                Button("+\(delta, specifier: "%.2g")") {
-                                    weight += delta
-                                }
-                                .font(.caption)
-                                .buttonStyle(.bordered)
-                                .tint(.indigo)
-                            }
-                            Spacer()
+                        if !weightFocused {
+                            Text("Tap to edit")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
                         }
                     }
+                    .frame(maxWidth: .infinity)
                 }
 
                 // Reps
@@ -153,6 +162,7 @@ struct AddSetView: View {
                     // Pre-fill with last logged values
                     if let lastSet = preselected.sets.sorted(by: { $0.date > $1.date }).first {
                         weight = lastSet.weight
+                        weightText = lastSet.weight.formatted
                         reps = lastSet.reps
                     }
                 }
