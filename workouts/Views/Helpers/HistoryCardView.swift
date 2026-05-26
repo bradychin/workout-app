@@ -63,7 +63,7 @@ struct DifficultyBadge: View {
     var color: Color {
         switch difficulty {
         case 1...3: return .green
-        case 4...6: return .yellow
+        case 4...6: return Color(red: 0.8, green: 0.6, blue: 0.0)
         case 7...8: return .orange
         default: return .red
         }
@@ -75,7 +75,7 @@ struct DifficultyBadge: View {
             .fontWeight(.semibold)
             .padding(.horizontal, 6)
             .padding(.vertical, 3)
-            .background(color.opacity(0.1))
+            .background(color.opacity(0.2))
             .foregroundStyle(color)
             .clipShape(Capsule())
     }
