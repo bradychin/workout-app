@@ -254,31 +254,6 @@ struct ActiveExerciseCard: View {
     }
 }
 
-// MARK: - Difficulty Badge
-
-struct DifficultyBadge: View {
-    let difficulty: Int
-
-    var color: Color {
-        switch difficulty {
-        case 1...4: return .green
-        case 5...7: return .orange
-        default: return .red
-        }
-    }
-
-    var body: some View {
-        Text("RPE \(difficulty)")
-            .font(.caption2)
-            .fontWeight(.semibold)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 3)
-            .background(color.opacity(0.2))
-            .foregroundStyle(color)
-            .clipShape(Capsule())
-    }
-}
-
 // MARK: - Inline Set Logger
 
 struct InlineSetLogger: View {

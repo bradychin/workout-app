@@ -55,9 +55,38 @@ struct HistoryCardView: View {
     }
 }
 
+// MARK: - Difficulty Badge
+
+struct DifficultyBadge: View {
+    let difficulty: Int
+
+    var color: Color {
+        switch difficulty {
+        case 1...3: return .green
+        case 4...6: return .yellow
+        case 7...8: return .orange
+        default: return .red
+        }
+    }
+
+    var body: some View {
+        Text("RPE \(difficulty)")
+            .font(.caption2)
+            .fontWeight(.semibold)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(color.opacity(0.1))
+            .foregroundStyle(color)
+            .clipShape(Capsule())
+    }
+}
+
 #Preview {
     let sets: [WorkoutSet] = [
-        WorkoutSet(date: .now, setNumber: 1, reps: 8, weight: 185, difficulty: 7),
+        WorkoutSet(date: .now, setNumber: 1, reps: 8, weight: 185, difficulty: 1),
+        WorkoutSet(date: .now, setNumber: 1, reps: 8, weight: 185, difficulty: 3),
+        WorkoutSet(date: .now, setNumber: 1, reps: 8, weight: 185, difficulty: 4),
+        WorkoutSet(date: .now, setNumber: 1, reps: 8, weight: 185, difficulty: 6),
         WorkoutSet(date: .now, setNumber: 2, reps: 8, weight: 185, difficulty: 8),
         WorkoutSet(date: .now, setNumber: 3, reps: 6, weight: 195, difficulty: 9)
     ]
