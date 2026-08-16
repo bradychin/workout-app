@@ -12,11 +12,11 @@ struct PlansView: View {
             Group {
                 if plans.isEmpty {
                     ContentUnavailableView {
-                        Label("No Plans Yet", systemImage: "list.bullet.clipboard")
+                        Label("No Sessions Yet", systemImage: "list.bullet.clipboard")
                     } description: {
-                        Text("Create a workout plan to get started")
+                        Text("Create a workout session to get started")
                     } actions: {
-                        Button("Create Plan") { showCreatePlan = true }
+                        Button("Create Session") { showCreatePlan = true }
                             .buttonStyle(.borderedProminent)
                             .tint(theme.accent)
                     }
@@ -34,7 +34,7 @@ struct PlansView: View {
                     .listStyle(.insetGrouped)
                 }
             }
-            .navigationTitle("Plans")
+            .navigationTitle("Sessions")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

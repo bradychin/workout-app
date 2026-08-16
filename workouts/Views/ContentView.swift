@@ -21,7 +21,7 @@ struct ContentView: View {
                     .tag(1)
 
                 PlansView()
-                    .tabItem { Label("Plans", systemImage: "list.bullet.clipboard.fill") }
+                    .tabItem { Label("Sessions", systemImage: "list.bullet.clipboard.fill") }
                     .tag(2)
 
                 SettingsView()
@@ -31,6 +31,7 @@ struct ContentView: View {
             .tint(theme.accent)
             .task {
                 DataSeeder.seedIfNeeded(modelContext)
+                workoutSession.restoreDraft(context: modelContext)
             }
 
             // Floating active workout banner — visible from any tab

@@ -24,7 +24,7 @@ struct CreatePlanView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Plan Name") {
+                Section("Session Name") {
                     TextField("e.g. Push Day", text: $planName)
                 }
 
@@ -65,7 +65,7 @@ struct CreatePlanView: View {
                     }
                 }
             }
-            .navigationTitle(isEditing ? "Edit Plan" : "New Plan")
+            .navigationTitle(isEditing ? "Edit Session" : "New Session")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
